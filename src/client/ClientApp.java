@@ -15,9 +15,10 @@ public class ClientApp {
             } catch (Exception ex) {
                 // persistent error handling not critical for UI look
             }
-            // Eagerly connect or connect inside LoginFrame
-            // Better to eager connect? But if server is down app might hang.
-            // RMIClient handles lazy connect.
+
+            // Apply theme tweaks
+            UITheme.applyTheme();
+            // Launch
             new LoginFrame().setVisible(true);
         });
     }

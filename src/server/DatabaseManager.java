@@ -71,10 +71,17 @@ public class DatabaseManager {
                     "start_date TEXT, " +
                     "end_date TEXT, " +
                     "status TEXT, " +
+                    "reason TEXT, " +
                     "year INTEGER, " +
                     "FOREIGN KEY(employee_id) REFERENCES employees(id)" +
                     ");";
             stmt.execute(createLeaveTable);
+
+            try {
+                stmt.execute("ALTER TABLE leave_applications ADD COLUMN reason TEXT");
+            } catch (SQLException ignore) {
+                // Column already exists
+            }
 
             // Insert default HR admin if not exists
             // ID: admin, Pass: admin123

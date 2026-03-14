@@ -39,9 +39,11 @@ public class HRDashboard extends JFrame {
 
     private JPanel createManagementPanel() {
         JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBackground(UITheme.BG);
         
         // --- Form ---
         JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setOpaque(false);
         formPanel.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder("Manage Employees"),
             BorderFactory.createEmptyBorder(10, 10, 10, 10)
@@ -55,26 +57,34 @@ public class HRDashboard extends JFrame {
         JLabel lblIdValue = new JLabel("-");
 
         JTextField txtFirst = new JTextField(15);
+        UITheme.styleInput(txtFirst);
         txtFirst.setToolTipText("Enter first name");
         JTextField txtLast = new JTextField(15);
+        UITheme.styleInput(txtLast);
         txtLast.setToolTipText("Enter last name");
         JTextField txtEmail = new JTextField(15);
+        UITheme.styleInput(txtEmail);
         txtEmail.setToolTipText("Enter email address");
         JPasswordField txtPass = new JPasswordField(15);
+        UITheme.styleInput(txtPass);
         txtPass.setToolTipText("Enter password");
         JTextField txtIc = new JTextField(15);
+        UITheme.styleInput(txtIc);
         txtIc.setToolTipText("Enter IC or Passport number");
         JTextField txtDesig = new JTextField(15);
+        UITheme.styleInput(txtDesig);
         txtDesig.setToolTipText("Enter designation");
         JTextField txtAddr = new JTextField(15);
+        UITheme.styleInput(txtAddr);
         txtAddr.setToolTipText("Enter address");
         JTextField txtBalance = new JTextField(15);
+        UITheme.styleInput(txtBalance);
         txtBalance.setToolTipText("Enter Leave Balance");
         txtBalance.setText("20"); // Default
 
-        JButton btnRegister = new JButton("Register");
-        JButton btnUpdate = new JButton("Update");
-        JButton btnClear = new JButton("Clear / New");
+        JButton btnRegister = UITheme.createPrimaryButton("Register");
+        JButton btnUpdate = UITheme.createAccentButton("Update");
+        JButton btnClear = UITheme.createPrimaryButton("Clear / New");
         btnUpdate.setEnabled(false); // Disabled until selection
 
         JLabel lblResult = new JLabel(" "); // To display status
@@ -107,6 +117,7 @@ public class HRDashboard extends JFrame {
             }
         };
         JTable table = new JTable(model);
+        table.setBackground(UITheme.PANEL_BG);
         // Hide extra columns that are just for data holding
         table.removeColumn(table.getColumnModel().getColumn(8)); // Address
         table.removeColumn(table.getColumnModel().getColumn(7)); // IC
@@ -114,8 +125,24 @@ public class HRDashboard extends JFrame {
         table.removeColumn(table.getColumnModel().getColumn(5)); // First Name
 
         table.setRowHeight(25);
-        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
+        table.setFillsViewportHeight(true);
+        table.setSelectionBackground(UITheme.ACCENT);
+        table.setSelectionForeground(Color.WHITE);
+        table.setShowGrid(false);
+        table.setIntercellSpacing(new Dimension(0,0));
+        table.setAutoCreateRowSorter(true);
+        // alternate row color via renderer
+        table.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer(){
+            @Override
+            public Component getTableCellRendererComponent(javax.swing.JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                if (!isSelected) c.setBackground(row % 2 == 0 ? UITheme.PANEL_BG : UITheme.BG);
+                return c;
+            }
+        });
+
         JScrollPane scroll = new JScrollPane(table);
+        scroll.getViewport().setBackground(UITheme.PANEL_BG);
         
         // Use SplitPane instead of BorderLayout
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, formPanel, scroll);
@@ -277,6 +304,16 @@ public class HRDashboard extends JFrame {
                             lblResult.setText("Updated: " + id);
                             lblResult.setForeground(new Color(0, 128, 0));
                             refreshTable.run();
+                            // try to reselect same id in the table to show updated row
+                            SwingUtilities.invokeLater(() -> {
+                                for (int i = 0; i < table.getRowCount(); i++) {
+                                    if (model.getValueAt(i,0).equals(id)) {
+                                        table.setRowSelectionInterval(i, i);
+                                        table.scrollRectToVisible(table.getCellRect(i, 0, true));
+                                        break;
+                                    }
+                                }
+                            });
                         } else {
                             lblResult.setText("Update Failed.");
                             lblResult.setForeground(Color.RED);
@@ -300,14 +337,14 @@ public class HRDashboard extends JFrame {
     private JPanel createLeavePanel() {
         JPanel panel = new JPanel(new BorderLayout());
         
-        String[] cols = {"Leave ID", "Emp ID", "Start", "End", "Status"};
+        String[] cols = {"Leave ID", "Emp ID", "Start", "End", "Status", "Reason"};
         DefaultTableModel model = new DefaultTableModel(cols, 0);
         JTable table = new JTable(model);
         
         JPanel controls = new JPanel();
-        JButton btnRefresh = new JButton("Refresh Pending");
-        JButton btnApprove = new JButton("Approve Selected");
-        JButton btnReject = new JButton("Reject Selected");
+        JButton btnRefresh = UITheme.createPrimaryButton("Refresh Pending");
+        JButton btnApprove = UITheme.createPrimaryButton("Approve Selected");
+        JButton btnReject = UITheme.createPrimaryButton("Reject Selected");
         controls.add(btnRefresh); controls.add(btnApprove); controls.add(btnReject);
         
         panel.add(controls, BorderLayout.NORTH);
@@ -324,7 +361,14 @@ public class HRDashboard extends JFrame {
                     try {
                         model.setRowCount(0);
                         for (LeaveApplication la : get()) {
-                            model.addRow(new Object[]{la.getLeaveID(), la.getEmployeeID(), la.getStartDate(), la.getEndDate(), la.getStatus()});
+                            model.addRow(new Object[]{
+                                la.getLeaveID(),
+                                la.getEmployeeID(),
+                                la.getStartDate(),
+                                la.getEndDate(),
+                                la.getStatus(),
+                                la.getReason()
+                            });
                         }
                     } catch (Exception ex) { ex.printStackTrace(); }
                 }
@@ -373,8 +417,10 @@ public class HRDashboard extends JFrame {
         JPanel inputPanel = new JPanel();
         
         JTextField txtEmpId = new JTextField(10);
+        UITheme.styleInput(txtEmpId);
         JTextField txtYear = new JTextField(5);
-        JButton btnGen = new JButton("Generate Report");
+        UITheme.styleInput(txtYear);
+        JButton btnGen = UITheme.createPrimaryButton("Generate Report");
         JTextArea txtReport = new JTextArea();
         txtReport.setEditable(false);
         
@@ -429,8 +475,10 @@ public class HRDashboard extends JFrame {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
         JTextField txtId = new JTextField(15);
+        UITheme.styleInput(txtId);
         JTextField txtLeaves = new JTextField(5);
-        JButton btnSync = new JButton("Sync to Payroll System");
+        UITheme.styleInput(txtLeaves);
+        JButton btnSync = UITheme.createPrimaryButton("Sync to Payroll System");
         JLabel lblRes = new JLabel("Status: Idle");
         
         gbc.gridx = 0; gbc.gridy = 0; panel.add(new JLabel("Employee ID:"), gbc);

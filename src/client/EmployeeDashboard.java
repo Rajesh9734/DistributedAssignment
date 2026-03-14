@@ -69,14 +69,14 @@ public class EmployeeDashboard extends JFrame {
         JTextField txtFirst = new JTextField(currentEmployee.getFirstName(), 20);
         JTextField txtLast = new JTextField(currentEmployee.getLastName(), 20);
         JTextField txtIc = new JTextField(currentEmployee.getIcPassport(), 20);
-        JTextField txtDesig = new JTextField(currentEmployee.getDesignation(), 20);
+        JLabel lblDesignation = new JLabel(currentEmployee.getDesignation());
         JTextField txtAddr = new JTextField(currentEmployee.getAddress(), 20);
         
         int r = 0;
         addLabelField(personalPanel, gbc, r++, "First Name:", txtFirst);
         addLabelField(personalPanel, gbc, r++, "Last Name:", txtLast);
         addLabelField(personalPanel, gbc, r++, "IC/Passport:", txtIc);
-        addLabelField(personalPanel, gbc, r++, "Designation:", txtDesig);
+        addLabelField(personalPanel, gbc, r++, "Designation:", lblDesignation);
         addLabelField(personalPanel, gbc, r++, "Address:", txtAddr);
 
         // --- Family Details Table ---
@@ -102,7 +102,9 @@ public class EmployeeDashboard extends JFrame {
         
         JPanel famControls = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnAddFam = new JButton("Add Member");
+        UITheme.stylePrimaryButton(btnAddFam);
         JButton btnRemFam = new JButton("Remove Selected");
+        UITheme.stylePrimaryButton(btnRemFam);
         famControls.add(btnAddFam);
         famControls.add(btnRemFam);
         
@@ -137,6 +139,7 @@ public class EmployeeDashboard extends JFrame {
 
         // --- Save All Button ---
         JButton btnUpdate = new JButton("Save All Changes");
+        UITheme.stylePrimaryButton(btnUpdate);
         btnUpdate.setPreferredSize(new Dimension(150, 40));
         btnUpdate.setFont(new Font("SansSerif", Font.BOLD, 12));
         
@@ -153,7 +156,6 @@ public class EmployeeDashboard extends JFrame {
             currentEmployee.setFirstName(txtFirst.getText());
             currentEmployee.setLastName(txtLast.getText());
             currentEmployee.setIcPassport(txtIc.getText());
-            currentEmployee.setDesignation(txtDesig.getText());
             currentEmployee.setAddress(txtAddr.getText());
             
             List<FamilyMember> newFamily = new ArrayList<>();
@@ -215,17 +217,23 @@ public class EmployeeDashboard extends JFrame {
         lblBalance = new JLabel("Balance: " + currentEmployee.getLeaveBalance());
         JTextField txtStart = new JTextField("YYYY-MM-DD", 10);
         JTextField txtEnd = new JTextField("YYYY-MM-DD", 10);
+        JTextField txtReason = new JTextField(18);
+        txtReason.setToolTipText("Reason for leave");
+        UITheme.styleInput(txtReason);
         JButton btnApply = new JButton("Apply Leave");
+        UITheme.stylePrimaryButton(btnApply);
         
         topPanel.add(lblBalance);
         topPanel.add(new JLabel("Start:"));
         topPanel.add(txtStart);
         topPanel.add(new JLabel("End:"));
         topPanel.add(txtEnd);
+        topPanel.add(new JLabel("Reason:"));
+        topPanel.add(txtReason);
         topPanel.add(btnApply);
         
         // Center: Table
-        String[] cols = {"Leave ID", "Start", "End", "Status", "Year"};
+        String[] cols = {"Leave ID", "Start", "End", "Status", "Year", "Reason"};
         tableModel = new DefaultTableModel(cols, 0);
         historyTable = new JTable(tableModel);
         
@@ -233,16 +241,21 @@ public class EmployeeDashboard extends JFrame {
         panel.add(new JScrollPane(historyTable), BorderLayout.CENTER);
         
         btnApply.addActionListener(e -> {
-            String start = txtStart.getText();
-            String end = txtEnd.getText();
-            // Simple validation could be added here
+            String start = txtStart.getText().trim();
+            String end = txtEnd.getText().trim();
+            String reason = txtReason.getText().trim();
+            if (reason.isEmpty()) {
+                JOptionPane.showMessageDialog(EmployeeDashboard.this, "Please enter a leave reason.");
+                return;
+            }
             
             LeaveApplication leave = new LeaveApplication(
                     UUID.randomUUID().toString().substring(0, 8),
                     currentEmployee.getId(),
                     start,
                     end,
-                    2026 // Hardcoded year for simplicity or extract from date
+                    2026, // Hardcoded year for simplicity or extract from date
+                    reason
             );
             
             btnApply.setEnabled(false);
@@ -258,6 +271,7 @@ public class EmployeeDashboard extends JFrame {
                         if (get()) {
                             JOptionPane.showMessageDialog(EmployeeDashboard.this, "Leave Applied!");
                             refreshLeaveData();
+                            txtReason.setText("");
                         } else {
                             JOptionPane.showMessageDialog(EmployeeDashboard.this, "Application Failed (Balance?).");
                         }
@@ -301,11 +315,17 @@ public class EmployeeDashboard extends JFrame {
                     List<LeaveApplication> list = get();
                     tableModel.setRowCount(0);
                     for (LeaveApplication l : list) {
-                        tableModel.addRow(new Object[]{ l.getLeaveID(), l.getStartDate(), l.getEndDate(), l.getStatus(), l.getYear() });
+                        tableModel.addRow(new Object[]{
+                            l.getLeaveID(),
+                            l.getStartDate(),
+                            l.getEndDate(),
+                            l.getStatus(),
+                            l.getYear(),
+                            l.getReason()
+                        });
                     }
                 } catch (Exception ex) { ex.printStackTrace(); }
             }
         }.execute();
     }
 }
-

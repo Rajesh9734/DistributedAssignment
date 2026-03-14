@@ -18,73 +18,89 @@ public class LoginFrame extends JFrame {
 
     public LoginFrame() {
         setTitle("HRM System Login");
-        setSize(500, 350); // Increased size
+        setSize(620, 420); // a bit wider / taller to avoid crowding
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setResizable(false);
         
         // Main container with padding
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(30, 30, 30, 30));
+        mainPanel.setBackground(UITheme.BG); // Ensure background matches
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(40, 40, 40, 40)); // More outer padding
 
         // Header
         JLabel lblHeader = new JLabel("Welcome back", SwingConstants.CENTER);
         lblHeader.setFont(new Font("SansSerif", Font.BOLD, 28)); // Larger font
+        lblHeader.setForeground(UITheme.HEADER_FG);
         lblHeader.setBorder(BorderFactory.createEmptyBorder(0, 0, 30, 0)); // More padding
         mainPanel.add(lblHeader, BorderLayout.NORTH);
 
         // Form Panel
         JPanel panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.insets = new Insets(12, 12, 12, 12);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Email Label // Changed
+        // Email Label
         gbc.gridx = 0; gbc.gridy = 0;
-        gbc.weightx = 0.3; // Give labels some weight
+        gbc.weightx = 0.0;
+        gbc.anchor = GridBagConstraints.LINE_END;
         JLabel lblEmail = new JLabel("Email:");
-        lblEmail.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblEmail.setFont(new Font("SansSerif", Font.PLAIN, 15));
         panel.add(lblEmail, gbc);
 
-        // Email Field // Changed
+        // Email Field
         gbc.gridx = 1;
-        gbc.weightx = 1.0; // Give fields more weight to expand
-        txtEmail = new JTextField();
-        txtEmail.setPreferredSize(new Dimension(250, 35)); // Specific size
-        txtEmail.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        gbc.weightx = 1.0;
+        gbc.anchor = GridBagConstraints.LINE_START;
+        txtEmail = new JTextField(22);
+        UITheme.styleInput(txtEmail);
+        txtEmail.setFont(new Font("SansSerif", Font.PLAIN, 15));
         panel.add(txtEmail, gbc);
 
         // Password Label
         gbc.gridx = 0; gbc.gridy = 1;
-        gbc.weightx = 0.3;
+        gbc.weightx = 0.0;
+        gbc.anchor = GridBagConstraints.LINE_END;
         JLabel lblPass = new JLabel("Password:");
-        lblPass.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        lblPass.setFont(new Font("SansSerif", Font.PLAIN, 15));
         panel.add(lblPass, gbc);
 
         // Password Field
         gbc.gridx = 1;
         gbc.weightx = 1.0;
-        txtPass = new JPasswordField();
-        txtPass.setPreferredSize(new Dimension(250, 35)); // Specific size
-        txtPass.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        gbc.anchor = GridBagConstraints.LINE_START;
+        txtPass = new JPasswordField(22);
+        UITheme.styleInput(txtPass);
+        txtPass.setFont(new Font("SansSerif", Font.PLAIN, 15));
         panel.add(txtPass, gbc);
 
         // Login Button
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2;
-        gbc.insets = new Insets(20, 10, 10, 10); // More spacing before button
-        btnLogin = new JButton("Login");
-        btnLogin.setPreferredSize(new Dimension(150, 45)); // Much larger button
-        btnLogin.setFont(new Font("SansSerif", Font.BOLD, 14));
+        gbc.weightx = 0.0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
+        gbc.insets = new Insets(28, 12, 8, 12);
+        btnLogin = UITheme.createPrimaryButton("Login");
+        btnLogin.setPreferredSize(new Dimension(150, 42));
         panel.add(btnLogin, gbc);
 
-        // Status Label
+        // status label styling
         gbc.gridy = 3;
+        gbc.insets = new Insets(8, 12, 0, 12);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
         lblStatus = new JLabel(" ");
-        lblStatus.setForeground(Color.RED);
+        lblStatus.setForeground(UITheme.MUTED);
         lblStatus.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(lblStatus, gbc);
 
-        mainPanel.add(panel, BorderLayout.CENTER); // Add form to center
+        // wrap panel in a white card
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(UITheme.PANEL_BG);
+        card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(UITheme.BG, 1), BorderFactory.createEmptyBorder(20,20,20,20)));
+        card.add(panel, BorderLayout.CENTER);
+        mainPanel.add(card, BorderLayout.CENTER);
         add(mainPanel); // Add main panel to frame
 
         // Action
@@ -155,4 +171,3 @@ public class LoginFrame extends JFrame {
         }
     }
 }
-

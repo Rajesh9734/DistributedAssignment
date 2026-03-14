@@ -11,14 +11,20 @@ public class LeaveApplication implements Serializable {
     private String endDate;
     private String status; // "Pending", "Approved", "Rejected"
     private int year;
+    private String reason;
 
     public LeaveApplication(String leaveID, String employeeID, String startDate, String endDate, int year) {
+        this(leaveID, employeeID, startDate, endDate, year, null);
+    }
+
+    public LeaveApplication(String leaveID, String employeeID, String startDate, String endDate, int year, String reason) {
         this.leaveID = leaveID;
         this.employeeID = employeeID;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = "Pending"; // Default status
         this.year = year;
+        this.reason = reason != null ? reason : "";
     }
 
     // Getters and Setters
@@ -70,9 +76,18 @@ public class LeaveApplication implements Serializable {
         this.year = year;
     }
 
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason != null ? reason : "";
+    }
+
     @Override
     public String toString() {
-        return "ID: " + leaveID + " | " + startDate + " to " + endDate + " | Status: " + status;
+        return "ID: " + leaveID + " | " + startDate + " to " + endDate +
+                " | Status: " + status + (reason != null && !reason.isEmpty() ? " | Reason: " + reason : "");
     }
 }
 

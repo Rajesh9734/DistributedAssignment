@@ -231,7 +231,7 @@ public class HRMServerImpl extends UnicastRemoteObject implements HRMInterface {
         // Current logic: Deduct immediately on apply.
         // Let's keep it consistent with previous logic for now.
         String updateBalanceSql = "UPDATE employees SET leave_balance = leave_balance - ? WHERE id = ? AND leave_balance >= ?";
-        String insertLeaveSql = "INSERT INTO leave_applications(leave_id, employee_id, start_date, end_date, status, year) VALUES(?, ?, ?, ?, ?, ?)";
+        String insertLeaveSql = "INSERT INTO leave_applications(leave_id, employee_id, start_date, end_date, status, reason, year) VALUES(?, ?, ?, ?, ?, ?, ?)";
 
         long days = 1; 
         try {
@@ -262,7 +262,8 @@ public class HRMServerImpl extends UnicastRemoteObject implements HRMInterface {
                 pstmtInsert.setString(3, leave.getStartDate());
                 pstmtInsert.setString(4, leave.getEndDate());
                 pstmtInsert.setString(5, leave.getStatus());
-                pstmtInsert.setInt(6, leave.getYear());
+                pstmtInsert.setString(6, leave.getReason());
+                pstmtInsert.setInt(7, leave.getYear());
                 pstmtInsert.executeUpdate();
             }
 
@@ -293,7 +294,8 @@ public class HRMServerImpl extends UnicastRemoteObject implements HRMInterface {
                     rs.getString("employee_id"),
                     rs.getString("start_date"),
                     rs.getString("end_date"),
-                    rs.getInt("year")
+                    rs.getInt("year"),
+                    rs.getString("reason")
                 );
                 la.setStatus(rs.getString("status"));
                 list.add(la);
@@ -463,13 +465,16 @@ public class HRMServerImpl extends UnicastRemoteObject implements HRMInterface {
              ResultSet rs = pstmt.executeQuery()) {
              
              while (rs.next()) {
-                 list.add(new LeaveApplication(
+                 LeaveApplication la = new LeaveApplication(
                      rs.getString("leave_id"),
                      rs.getString("employee_id"),
                      rs.getString("start_date"),
                      rs.getString("end_date"),
-                     rs.getInt("year")
-                 ));
+                     rs.getInt("year"),
+                     rs.getString("reason")
+                 );
+                 la.setStatus(rs.getString("status"));
+                 list.add(la);
              }
         } catch (SQLException e) {
              e.printStackTrace();
