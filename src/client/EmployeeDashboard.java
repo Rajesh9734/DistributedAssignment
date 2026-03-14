@@ -58,16 +58,19 @@ public class EmployeeDashboard extends JFrame {
         
         // --- Personal Details Form ---
         JPanel personalPanel = new JPanel(new GridBagLayout());
-        personalPanel.setBorder(BorderFactory.createTitledBorder("Personal Details"));
+        personalPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder("Personal Details"),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 8, 8, 8); // More spacing
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JTextField txtFirst = new JTextField(currentEmployee.getFirstName(), 15);
-        JTextField txtLast = new JTextField(currentEmployee.getLastName(), 15);
-        JTextField txtIc = new JTextField(currentEmployee.getIcPassport(), 15);
-        JTextField txtDesig = new JTextField(currentEmployee.getDesignation(), 15);
-        JTextField txtAddr = new JTextField(currentEmployee.getAddress(), 15);
+        JTextField txtFirst = new JTextField(currentEmployee.getFirstName(), 20);
+        JTextField txtLast = new JTextField(currentEmployee.getLastName(), 20);
+        JTextField txtIc = new JTextField(currentEmployee.getIcPassport(), 20);
+        JTextField txtDesig = new JTextField(currentEmployee.getDesignation(), 20);
+        JTextField txtAddr = new JTextField(currentEmployee.getAddress(), 20);
         
         int r = 0;
         addLabelField(personalPanel, gbc, r++, "First Name:", txtFirst);
@@ -78,11 +81,17 @@ public class EmployeeDashboard extends JFrame {
 
         // --- Family Details Table ---
         JPanel familyPanel = new JPanel(new BorderLayout());
-        familyPanel.setBorder(BorderFactory.createTitledBorder("Family Members"));
+        familyPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder("Family Members"),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
         
         String[] famCols = {"Relation", "First Name", "Last Name", "Email", "Phone"};
         DefaultTableModel famModel = new DefaultTableModel(famCols, 0);
         JTable famTable = new JTable(famModel);
+        famTable.setRowHeight(25);
+        famTable.setShowGrid(true);
+        famTable.setGridColor(Color.LIGHT_GRAY);
         
         // Load initial family data
         if (currentEmployee.getFamilyMembers() != null) {
@@ -91,7 +100,7 @@ public class EmployeeDashboard extends JFrame {
             }
         }
         
-        JPanel famControls = new JPanel();
+        JPanel famControls = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         JButton btnAddFam = new JButton("Add Member");
         JButton btnRemFam = new JButton("Remove Selected");
         famControls.add(btnAddFam);
@@ -108,11 +117,14 @@ public class EmployeeDashboard extends JFrame {
             JTextField email = new JTextField();
             JTextField phone = new JTextField();
             
-            Object[] message = {
-                "Relation:", combo, "First Name:", fName, "Last Name:", lName, "Email:", email, "Phone:", phone
-            };
+            JPanel p = new JPanel(new GridLayout(0, 2, 5, 5));
+            p.add(new JLabel("Relation:")); p.add(combo);
+            p.add(new JLabel("First Name:")); p.add(fName);
+            p.add(new JLabel("Last Name:")); p.add(lName);
+            p.add(new JLabel("Email:")); p.add(email);
+            p.add(new JLabel("Phone:")); p.add(phone);
             
-            int option = JOptionPane.showConfirmDialog(this, message, "Add Family Member", JOptionPane.OK_CANCEL_OPTION);
+            int option = JOptionPane.showConfirmDialog(this, p, "Add Family Member", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
             if (option == JOptionPane.OK_OPTION) {
                 famModel.addRow(new Object[]{combo.getSelectedItem(), fName.getText(), lName.getText(), email.getText(), phone.getText()});
             }
@@ -125,8 +137,14 @@ public class EmployeeDashboard extends JFrame {
 
         // --- Save All Button ---
         JButton btnUpdate = new JButton("Save All Changes");
+        btnUpdate.setPreferredSize(new Dimension(150, 40));
+        btnUpdate.setFont(new Font("SansSerif", Font.BOLD, 12));
+        
         JLabel lblStatus = new JLabel(" ");
-        JPanel bottomPanel = new JPanel();
+        lblStatus.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
+        
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         bottomPanel.add(btnUpdate);
         bottomPanel.add(lblStatus);
 

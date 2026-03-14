@@ -400,7 +400,7 @@ public class HRMServerImpl extends UnicastRemoteObject implements HRMInterface {
              ResultSet rs = pstmt.executeQuery()) {
             
             while (rs.next()) {
-                list.add(new Employee(
+                Employee e = new Employee(
                     rs.getString("id"),
                     rs.getString("email"),
                     rs.getString("password"),
@@ -410,7 +410,9 @@ public class HRMServerImpl extends UnicastRemoteObject implements HRMInterface {
                     rs.getString("ic_passport"),
                     rs.getString("designation"),
                     rs.getString("address")
-                ));
+                );
+                e.setLeaveBalance(rs.getInt("leave_balance"));
+                list.add(e);
             }
         } catch (SQLException e) {
             e.printStackTrace();

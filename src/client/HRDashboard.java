@@ -42,23 +42,45 @@ public class HRDashboard extends JFrame {
         
         // --- Form ---
         JPanel formPanel = new JPanel(new GridBagLayout());
-        formPanel.setBorder(BorderFactory.createTitledBorder("Register New Employee"));
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder("Manage Employees"),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
         
+        // ID is needed for updates but not usually entered manually for register
+        // We'll store it in a hidden way or use a label for updates.
+        JLabel lblIdValue = new JLabel("-");
+
         JTextField txtFirst = new JTextField(15);
+        txtFirst.setToolTipText("Enter first name");
         JTextField txtLast = new JTextField(15);
+        txtLast.setToolTipText("Enter last name");
         JTextField txtEmail = new JTextField(15);
+        txtEmail.setToolTipText("Enter email address");
         JPasswordField txtPass = new JPasswordField(15);
+        txtPass.setToolTipText("Enter password");
         JTextField txtIc = new JTextField(15);
+        txtIc.setToolTipText("Enter IC or Passport number");
         JTextField txtDesig = new JTextField(15);
+        txtDesig.setToolTipText("Enter designation");
         JTextField txtAddr = new JTextField(15);
-        
+        txtAddr.setToolTipText("Enter address");
+        JTextField txtBalance = new JTextField(15);
+        txtBalance.setToolTipText("Enter Leave Balance");
+        txtBalance.setText("20"); // Default
+
         JButton btnRegister = new JButton("Register");
-        JLabel lblResult = new JLabel(" "); // To display generated ID
+        JButton btnUpdate = new JButton("Update");
+        JButton btnClear = new JButton("Clear / New");
+        btnUpdate.setEnabled(false); // Disabled until selection
+
+        JLabel lblResult = new JLabel(" "); // To display status
         
         int r = 0;
+        addRow(formPanel, gbc, r++, "ID:", lblIdValue);
         addRow(formPanel, gbc, r++, "First Name:", txtFirst);
         addRow(formPanel, gbc, r++, "Last Name:", txtLast);
         addRow(formPanel, gbc, r++, "Email:", txtEmail);
@@ -66,16 +88,40 @@ public class HRDashboard extends JFrame {
         addRow(formPanel, gbc, r++, "IC/Passport:", txtIc);
         addRow(formPanel, gbc, r++, "Designation:", txtDesig);
         addRow(formPanel, gbc, r++, "Address:", txtAddr);
-        gbc.gridx = 0; gbc.gridy = r++; gbc.gridwidth = 2; formPanel.add(btnRegister, gbc);
+        addRow(formPanel, gbc, r++, "Leave Balance:", txtBalance);
+        
+        JPanel btnPanel = new JPanel(new FlowLayout());
+        btnPanel.add(btnRegister);
+        btnPanel.add(btnUpdate);
+        btnPanel.add(btnClear);
+        
+        gbc.gridx = 0; gbc.gridy = r++; gbc.gridwidth = 2; formPanel.add(btnPanel, gbc);
         gbc.gridy = r++; formPanel.add(lblResult, gbc);
 
         // --- List ---
-        DefaultTableModel model = new DefaultTableModel(new String[]{"ID", "Name", "Email", "Designation", "Balance"}, 0);
+        // Changed column header from "Balance" to "Leave Balance"
+        DefaultTableModel model = new DefaultTableModel(new String[]{"ID", "Name", "Email", "Designation", "Leave Balance", "First Name", "Last Name", "IC", "Address"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
         JTable table = new JTable(model);
+        // Hide extra columns that are just for data holding
+        table.removeColumn(table.getColumnModel().getColumn(8)); // Address
+        table.removeColumn(table.getColumnModel().getColumn(7)); // IC
+        table.removeColumn(table.getColumnModel().getColumn(6)); // Last Name
+        table.removeColumn(table.getColumnModel().getColumn(5)); // First Name
+
+        table.setRowHeight(25);
+        table.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 12));
         JScrollPane scroll = new JScrollPane(table);
         
-        mainPanel.add(formPanel, BorderLayout.WEST);
-        mainPanel.add(scroll, BorderLayout.CENTER);
+        // Use SplitPane instead of BorderLayout
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, formPanel, scroll);
+        splitPane.setDividerLocation(400); // Increased for extra balance field
+        splitPane.setContinuousLayout(true);
+        mainPanel.add(splitPane, BorderLayout.CENTER);
         
         // Refresh Table Function
         Runnable refreshTable = () -> {
@@ -90,7 +136,17 @@ public class HRDashboard extends JFrame {
                          List<Employee> list = get();
                          model.setRowCount(0);
                          for (Employee e : list) {
-                             model.addRow(new Object[]{e.getId(), e.getFirstName() + " " + e.getLastName(), e.getEmail(), e.getDesignation(), e.getLeaveBalance()});
+                             model.addRow(new Object[]{
+                                 e.getId(), 
+                                 e.getFirstName() + " " + e.getLastName(), 
+                                 e.getEmail(), 
+                                 e.getDesignation(), 
+                                 e.getLeaveBalance(),
+                                 e.getFirstName(),
+                                 e.getLastName(),
+                                 e.getIcPassport(),
+                                 e.getAddress()
+                             });
                          }
                      } catch (Exception ex) { ex.printStackTrace(); }
                  }
@@ -100,6 +156,39 @@ public class HRDashboard extends JFrame {
         // Initial Refresh
         refreshTable.run();
 
+        // Table Selection Listener
+        table.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting() && table.getSelectedRow() != -1) {
+                int row = table.getSelectedRow();
+                lblIdValue.setText(model.getValueAt(row, 0).toString());
+                txtFirst.setText(model.getValueAt(row, 5).toString());
+                txtLast.setText(model.getValueAt(row, 6).toString());
+                txtEmail.setText(model.getValueAt(row, 2).toString());
+                txtDesig.setText(model.getValueAt(row, 3).toString());
+                txtBalance.setText(model.getValueAt(row, 4).toString());
+                txtIc.setText(model.getValueAt(row, 7) != null ? model.getValueAt(row, 7).toString() : "");
+                txtAddr.setText(model.getValueAt(row, 8) != null ? model.getValueAt(row, 8).toString() : "");
+                
+                // Disable ID/Pass editing during update might be wise, but keeping it flexible
+                // Note: Updating Email/ID/Pass is not fully supported by updateProfile if they change PKs, 
+                // but the form allows input. We are using ID for lookup.
+                
+                btnRegister.setEnabled(false);
+                btnUpdate.setEnabled(true);
+                lblResult.setText("Editing Employee: " + lblIdValue.getText());
+            }
+        });
+
+        btnClear.addActionListener(e -> {
+            table.clearSelection();
+            lblIdValue.setText("-");
+            txtFirst.setText(""); txtLast.setText(""); txtEmail.setText(""); txtPass.setText("");
+            txtIc.setText(""); txtDesig.setText(""); txtAddr.setText(""); txtBalance.setText("20");
+            btnRegister.setEnabled(true);
+            btnUpdate.setEnabled(false);
+            lblResult.setText("Ready to Register");
+        });
+
         btnRegister.addActionListener(e -> {
             String f = txtFirst.getText().trim();
             String l = txtLast.getText().trim();
@@ -108,9 +197,12 @@ public class HRDashboard extends JFrame {
             String ic = txtIc.getText().trim();
             String d = txtDesig.getText().trim();
             String a = txtAddr.getText().trim();
+            int bal = 20;
+            try { bal = Integer.parseInt(txtBalance.getText().trim()); } catch(Exception ex) {}
+
             
             if (f.isEmpty() || em.isEmpty() || p.isEmpty()) {
-                lblResult.setText("Name, Email, Pass required.");
+                lblResult.setText("Name, Email, Pass required needs.");
                 return;
             }
             
@@ -118,6 +210,7 @@ public class HRDashboard extends JFrame {
             String id = (f.length() > 0 ? f.substring(0, 1).toLowerCase() : "u") + (int)(Math.random() * 10000);
             
             Employee emp = new Employee(id, em, p, "EMP", f, l, ic, d, a);
+            emp.setLeaveBalance(bal);
             
             btnRegister.setEnabled(false);
             new SwingWorker<Boolean, Void>() {
@@ -131,7 +224,7 @@ public class HRDashboard extends JFrame {
                         if (get()) {
                             lblResult.setText("Registered! ID: " + id);
                             lblResult.setForeground(new Color(0, 128, 0));
-                            txtFirst.setText(""); txtLast.setText(""); txtEmail.setText(""); txtPass.setText("");
+                            btnClear.doClick();
                             refreshTable.run();
                         } else {
                             lblResult.setText("Failed.");
@@ -141,6 +234,57 @@ public class HRDashboard extends JFrame {
                         lblResult.setText("Error: " + ex.getMessage());
                     }
                     btnRegister.setEnabled(true);
+                }
+            }.execute();
+        });
+
+        btnUpdate.addActionListener(e -> {
+            String id = lblIdValue.getText();
+            if (id.equals("-")) return;
+
+            String f = txtFirst.getText().trim();
+            String l = txtLast.getText().trim();
+            String em = txtEmail.getText().trim();
+            String ic = txtIc.getText().trim();
+            String d = txtDesig.getText().trim();
+            String a = txtAddr.getText().trim();
+            int bal = 0;
+            try { bal = Integer.parseInt(txtBalance.getText().trim()); } catch (Exception ex) {
+                lblResult.setText("Invalid Balance"); return;
+            }
+
+            // Construct employee object for update
+            // Note: Password update is not handled by updateProfile currently, nor is Email.
+            // We pass them to constructor but updateProfile might ignore them if not coded in server.
+            // Server's updateProfile updates: first, last, ic, designation, address.
+            // And we will call updateLeaveBalance separately.
+            
+            Employee emp = new Employee(id, em, "", "EMP", f, l, ic, d, a);
+            
+            btnUpdate.setEnabled(false);
+            int finalBal = bal;
+            new SwingWorker<Boolean, Void>() {
+                @Override
+                protected Boolean doInBackground() throws Exception {
+                    boolean pUpdate = RMIClient.getService().updateProfile(emp);
+                    boolean bUpdate = RMIClient.getService().updateLeaveBalance(id, finalBal);
+                    return pUpdate && bUpdate;
+                }
+                @Override
+                protected void done() {
+                    try {
+                        if (get()) {
+                            lblResult.setText("Updated: " + id);
+                            lblResult.setForeground(new Color(0, 128, 0));
+                            refreshTable.run();
+                        } else {
+                            lblResult.setText("Update Failed.");
+                            lblResult.setForeground(Color.RED);
+                        }
+                    } catch (Exception ex) {
+                        lblResult.setText("Error: " + ex.getMessage());
+                    }
+                    btnUpdate.setEnabled(true);
                 }
             }.execute();
         });
@@ -192,7 +336,7 @@ public class HRDashboard extends JFrame {
             if (row == -1) return;
             String lid = (String) model.getValueAt(row, 0);
             String action = (String) model.getValueAt(row, 4); // Hacky way to pass status
-            
+            System.out.println("Updating leave ID: " + lid + " to " + action);
             new SwingWorker<Boolean, Void>() {
                 @Override
                 protected Boolean doInBackground() throws Exception {
