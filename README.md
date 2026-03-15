@@ -1,4 +1,3 @@
-# BHEL HRM System
 
 ### How to run:
 1. Clone this repository.
