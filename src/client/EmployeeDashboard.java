@@ -39,18 +39,44 @@ public class EmployeeDashboard extends JFrame {
         JMenuBar mb = new JMenuBar();
         JMenu menu = new JMenu("System");
         JMenuItem logout = new JMenuItem("Logout");
-        logout.addActionListener(e -> {
-            dispose();
-            new LoginFrame().setVisible(true);
-        });
+        logout.addActionListener(e -> performLogout());
         menu.add(logout);
         mb.add(menu);
         setJMenuBar(mb);
 
-        add(tabbedPane);
+        JButton btnLogout = UITheme.createPrimaryButton("Logout");
+        btnLogout.addActionListener(e -> performLogout());
+
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(UITheme.PANEL_BG);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        JLabel lblTitle = new JLabel("Employee Dashboard - " + currentEmployee.getId());
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 18));
+        lblTitle.setForeground(UITheme.HEADER_FG);
+        headerPanel.add(lblTitle, BorderLayout.WEST);
+        headerPanel.add(btnLogout, BorderLayout.EAST);
+
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(UITheme.BG);
+        root.add(headerPanel, BorderLayout.NORTH);
+        root.add(tabbedPane, BorderLayout.CENTER);
+        add(root);
         
         // Initial data load for Leave tab
         refreshLeaveData();
+    }
+
+    private void performLogout() {
+        int choice = JOptionPane.showConfirmDialog(
+            this,
+            "Logout from current session?",
+            "Confirm Logout",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (choice == JOptionPane.YES_OPTION) {
+            dispose();
+            SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+        }
     }
 
     private JPanel createProfilePanel() {

@@ -143,6 +143,8 @@ public class HRMServerImpl extends UnicastRemoteObject implements HRMInterface {
     public boolean updateProfile(Employee emp) throws RemoteException {
         // Update basic details
         String updateEmpSql = "UPDATE employees SET first_name=?, last_name=?, ic_passport=?, designation=?, address=? WHERE id=?";
+        String updateUserEmailSql = "UPDATE users SET email=? WHERE id=?";
+        String updateUserPasswordSql = "UPDATE users SET password=? WHERE id=?";
         
         // Replace family members strategy: Delete all for this user, then insert new list
         String deleteFamSql = "DELETE FROM family_members WHERE employee_id=?";
@@ -161,6 +163,21 @@ public class HRMServerImpl extends UnicastRemoteObject implements HRMInterface {
                  pstmtEmp.setString(5, emp.getAddress());
                  pstmtEmp.setString(6, emp.getId());
                  pstmtEmp.executeUpdate();
+            }
+
+            // Keep users table in sync when HR updates account details.
+            try (PreparedStatement pstmtUserEmail = conn.prepareStatement(updateUserEmailSql)) {
+                pstmtUserEmail.setString(1, emp.getEmail());
+                pstmtUserEmail.setString(2, emp.getId());
+                pstmtUserEmail.executeUpdate();
+            }
+
+            if (emp.getPassword() != null && !emp.getPassword().trim().isEmpty()) {
+                try (PreparedStatement pstmtUserPass = conn.prepareStatement(updateUserPasswordSql)) {
+                    pstmtUserPass.setString(1, emp.getPassword().trim());
+                    pstmtUserPass.setString(2, emp.getId());
+                    pstmtUserPass.executeUpdate();
+                }
             }
 
             // Update family members

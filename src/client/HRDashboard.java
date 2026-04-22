@@ -26,15 +26,41 @@ public class HRDashboard extends JFrame {
         JMenuBar mb = new JMenuBar();
         JMenu menu = new JMenu("System");
         JMenuItem logout = new JMenuItem("Logout");
-        logout.addActionListener(e -> {
-            dispose();
-            new LoginFrame().setVisible(true);
-        });
+        logout.addActionListener(e -> performLogout());
         menu.add(logout);
         mb.add(menu);
         setJMenuBar(mb);
-        
-        add(tabbedPane);
+
+        JButton btnLogout = UITheme.createPrimaryButton("Logout");
+        btnLogout.addActionListener(e -> performLogout());
+
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(UITheme.PANEL_BG);
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(10, 14, 10, 14));
+        JLabel lblTitle = new JLabel("HR Dashboard");
+        lblTitle.setFont(new Font("SansSerif", Font.BOLD, 18));
+        lblTitle.setForeground(UITheme.HEADER_FG);
+        headerPanel.add(lblTitle, BorderLayout.WEST);
+        headerPanel.add(btnLogout, BorderLayout.EAST);
+
+        JPanel root = new JPanel(new BorderLayout());
+        root.setBackground(UITheme.BG);
+        root.add(headerPanel, BorderLayout.NORTH);
+        root.add(tabbedPane, BorderLayout.CENTER);
+        add(root);
+    }
+
+    private void performLogout() {
+        int choice = JOptionPane.showConfirmDialog(
+            this,
+            "Logout from current session?",
+            "Confirm Logout",
+            JOptionPane.YES_NO_OPTION
+        );
+        if (choice == JOptionPane.YES_OPTION) {
+            dispose();
+            SwingUtilities.invokeLater(() -> new LoginFrame().setVisible(true));
+        }
     }
 
     private JPanel createManagementPanel() {
@@ -195,6 +221,8 @@ public class HRDashboard extends JFrame {
                 txtBalance.setText(model.getValueAt(row, 4).toString());
                 txtIc.setText(model.getValueAt(row, 7) != null ? model.getValueAt(row, 7).toString() : "");
                 txtAddr.setText(model.getValueAt(row, 8) != null ? model.getValueAt(row, 8).toString() : "");
+                txtPass.setText("");
+                txtPass.setToolTipText("Leave blank to keep existing password; enter a new one to update.");
                 
                 // Disable ID/Pass editing during update might be wise, but keeping it flexible
                 // Note: Updating Email/ID/Pass is not fully supported by updateProfile if they change PKs, 
@@ -272,6 +300,7 @@ public class HRDashboard extends JFrame {
             String f = txtFirst.getText().trim();
             String l = txtLast.getText().trim();
             String em = txtEmail.getText().trim();
+            String p = new String(txtPass.getPassword()).trim();
             String ic = txtIc.getText().trim();
             String d = txtDesig.getText().trim();
             String a = txtAddr.getText().trim();
@@ -286,7 +315,7 @@ public class HRDashboard extends JFrame {
             // Server's updateProfile updates: first, last, ic, designation, address.
             // And we will call updateLeaveBalance separately.
             
-            Employee emp = new Employee(id, em, "", "EMP", f, l, ic, d, a);
+            Employee emp = new Employee(id, em, p, "EMP", f, l, ic, d, a);
             
             btnUpdate.setEnabled(false);
             int finalBal = bal;
