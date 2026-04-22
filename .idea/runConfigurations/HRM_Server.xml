@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="HRM Server" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="server.HRMServer" />
+    <module name="BHEL_HRM" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

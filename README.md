@@ -2,7 +2,6 @@
 
 ### How to run:
 1. Clone this repository.
-2. Open in IntelliJ IDEA.
-3. Wait for Maven to import dependencies (check the bottom right).
-4. Run `server.HRMServer` first.
-5. Then run `client.ClientApp`.
+2. Open in IntelliJ IDEA (optional).
+3. Run `server.HRMServer` first (or use `run_server.bat`).
+4. Then run `client.ClientApp` (or use `run_client.bat`).

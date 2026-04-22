@@ -2,6 +2,16 @@
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.idea/shelf/
+.idea/**/workspace.xml
+# Keep shared run configurations and libraries
+!.idea/runConfigurations/
+!.idea/runConfigurations/**
+!.idea/libraries/
+!.idea/libraries/**
+
+# Java bytecode
+*.class
 
 ### Eclipse ###
 .apt_generated
